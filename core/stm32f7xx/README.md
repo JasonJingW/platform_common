@@ -21,6 +21,10 @@ stm32f7xx/
 └── config/stm32f7xx_hal_conf.h
 ```
 
+`config/stm32f767xgx_config.h` 保存当前 STM32F767xGx 的物理内存容量及可调整 RTOS 参数。该型号 Flash 为 1 MiB；系统 RAM 为 SRAM1 368 KiB、SRAM2 16 KiB、DTCM 128 KiB，共 512 KiB。另有 ITCM 16 KiB 和备份 SRAM 4 KiB，不将其并入普通连续 RAM 预算。容量宏用于描述硬件，不能替代链接脚本，也不会自动改变堆的存放区域。
+
+可调整参数采用 `CHIP_RTOS_*` 命名：`TOTAL_HEAP_SIZE`（字节）、`MINIMAL_STACK_SIZE`、`TIMER_TASK_STACK_DEPTH`、`APP_TASK_STACK_DEPTH`（32 位字数），以及 `TIMER_QUEUE_LENGTH`、`MAX_PRIORITIES`、`MAX_TASK_NAME_LEN`、`TIMER_TASK_PRIORITY`。这些是当前配置值，不是由物理容量自动推导的最佳值；改变 RAM 区域或任务负载后需重新评估。
+
 CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包含基础、GPIO、RCC、Cortex、PWR、FLASH 模块及其必要扩展文件。
 
 ## 集成路径
