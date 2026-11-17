@@ -20,7 +20,8 @@ Purpose : User configuration file for RTT.
 #ifndef SEGGER_RTT_CONF_H
 #define SEGGER_RTT_CONF_H
 
-#include "generated/project_autoconf.h"
+#define RTT_LOG_LEVEL 3U /* 0=off, 1=errors, 2=warnings, 3=info. */
+#define RTT_LOG_COLOR 1  /* Enable ANSI log colors. */
 
 
 /*********************************************************************

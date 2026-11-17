@@ -496,7 +496,7 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
         SEGGER_RTT_WriteString(0, RLOG_COLOR_RESET "\r\n");                    \
     } while (0)
 
-#if CONFIG_RTT_LOG_COLOR
+#if RTT_LOG_COLOR
 #define RLOG_COLOR_INFO RTT_CTRL_TEXT_GREEN
 #define RLOG_COLOR_ERR RTT_CTRL_TEXT_RED
 #define RLOG_COLOR_WAR RTT_CTRL_TEXT_YELLOW
@@ -508,17 +508,17 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
 #define RLOG_COLOR_RESET ""
 #endif
 
-#if CONFIG_RTT_LOG_LEVEL >= 3
+#if RTT_LOG_LEVEL >= 3
 #define RLOG_INFO(...) RLOG_OUTPUT(RLOG_COLOR_INFO, "INFO", __VA_ARGS__)
 #else
 #define RLOG_INFO(...) ((void)0)
 #endif
-#if CONFIG_RTT_LOG_LEVEL >= 1
+#if RTT_LOG_LEVEL >= 1
 #define RLOG_ERR(...) RLOG_OUTPUT(RLOG_COLOR_ERR, "ERR", __VA_ARGS__)
 #else
 #define RLOG_ERR(...) ((void)0)
 #endif
-#if CONFIG_RTT_LOG_LEVEL >= 2
+#if RTT_LOG_LEVEL >= 2
 #define RLOG_WAR(...) RLOG_OUTPUT(RLOG_COLOR_WAR, "WAR", __VA_ARGS__)
 #else
 #define RLOG_WAR(...) ((void)0)

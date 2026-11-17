@@ -1,7 +1,10 @@
 # platform_common
 
+- `scripts/build/build.py`：通用构建入口，读取主仓 build 后端的 build.json 并转发命令，使用说明见 `scripts/build/readme.md`。
+
 - `core/stm32f7xx/`：STM32F7 芯片相关的 HAL、CMSIS、启动文件、系统文件和 HAL 配置，见该目录下的说明。
 - `FreeRTOS/`：FreeRTOS 内核、公共头文件、GCC/Cortex-M7 移植选项、heap_4、配置模板及许可证；不保留独立 `.git`，集成步骤见该目录 README。
+- `CMakeLists.txt`：仅声明可选源码接口 common::stm32f7xx、freertos_* 和 rtt，最终由主仓构建目标选择。
 - `RTT/`：SEGGER RTT 文件，由 platform_common 直接管理，不保留独立的 .git。使用 `RTT/RTT/SEGGER_RTT.c`、`RTT/RTT/SEGGER_RTT_printf.c`，包含路径为 `RTT/RTT` 和 `RTT/Config`；配置位于 `RTT/Config/SEGGER_RTT_Conf.h`。主项目不再保留重复副本。
 - `RTT/RTT/SEGGER_RTT.h`：内置 RTT 日志宏。使用原有 RTT 包含路径，启动时调用 `segger_rtt_init()`；`RLOG_INFO`、`RLOG_ERR`、`RLOG_WAR` 分别输出绿色、红色、黄色日志，自动附带级别、恢复默认颜色并换行。日志正文无需手动添加换行，格式参数遵循 `SEGGER_RTT_printf`（不支持浮点等完整标准 printf 格式）。颜色需查看终端支持 ANSI 控制序列。
 

@@ -23,7 +23,7 @@ stm32f7xx/
 
 `config/stm32f767xgx_config.h` 保存当前 STM32F767xGx 的物理内存容量及可调整 RTOS 参数。该型号 Flash 为 1 MiB；系统 RAM 为 SRAM1 368 KiB、SRAM2 16 KiB、DTCM 128 KiB，共 512 KiB。另有 ITCM 16 KiB 和备份 SRAM 4 KiB，不将其并入普通连续 RAM 预算。容量宏用于描述硬件，不能替代链接脚本，也不会自动改变堆的存放区域。
 
-可调整参数采用 `CHIP_RTOS_*` 命名：`TOTAL_HEAP_SIZE`（字节）、`MINIMAL_STACK_SIZE`、`TIMER_TASK_STACK_DEPTH`、`APP_TASK_STACK_DEPTH`（32 位字数），以及 `TIMER_QUEUE_LENGTH`、`MAX_PRIORITIES`、`MAX_TASK_NAME_LEN`、`TIMER_TASK_PRIORITY`。这些是当前配置值，不是由物理容量自动推导的最佳值；改变 RAM 区域或任务负载后需重新评估。
+可调整参数采用 `CHIP_RTOS_*` 命名：`TOTAL_HEAP_SIZE`（字节）、`MINIMAL_STACK_SIZE`、`TIMER_TASK_STACK_DEPTH`（32 位字数），以及 `TIMER_QUEUE_LENGTH`、`MAX_PRIORITIES`、`MAX_TASK_NAME_LEN`、`TIMER_TASK_PRIORITY`。这些值直接在该芯片配置头文件中修改；不是由物理容量自动推导的最佳值；改变 RAM 区域或任务负载后需重新评估。
 
 CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包含基础、GPIO、RCC、Cortex、PWR、FLASH 模块及其必要扩展文件。
 
@@ -32,13 +32,13 @@ CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包�
 以下路径均相对于本目录：
 
 - 头文件路径：本目录、`hal_driver/Inc`、`cmsis/Core/Include`、`cmsis/Device/ST/STM32F7xx/Include`、`config`。
-- 系统初始化源文件：`system_init.c`，依赖芯片 HAL/CMSIS 及当前项目的 FreeRTOS 时基，不依赖 RTT；额外加入 FreeRTOS 的 `include`、选中移植层和使用方配置目录的包含路径。
+- 系统初始化源文件：`system_init.c`，依赖 HAL/CMSIS，不依赖 RTT；根构建定义 PROJECT_USE_FREERTOS=1 时再接入 RTOS 时基及相应头文件，定义为 0 时保持裸机 HAL 时基。
 - HAL 源文件：`hal_driver/Src/*.c`。
 - 系统文件：`cmsis/Device/ST/STM32F7xx/Source/Templates/system_stm32f7xx.c`。
 - GCC 启动文件：`cmsis/Device/ST/STM32F7xx/Source/Templates/gcc/startup_stm32f767xx.s`。
 - 当前型号宏：`STM32F767xx`；使用 HAL 时定义 `USE_HAL_DRIVER`。
 
-构建方还需提供适配具体芯片容量及内存布局的链接脚本、Cortex-M7 工具链参数、板级初始化和应用源文件。当前尚无构建工程，未验证编译或烧录。
+本仓仅提供 common::stm32f7xx 源码接口；当前主项目 build/gcc 提供工具链和链接脚本，已完成完整固件链接，尚未上板运行。最终构建方需要提供匹配芯片容量的内存布局、板级初始化和应用源文件。
 
 `config/stm32f7xx_hal_conf.h` 是当前项目配置，包含 HAL 模块开关和 HSE 等参数；切换板卡时需核对。若使用应用自有配置，应将其所在目录加入包含路径，并避免同时引入多个同名配置。
 
