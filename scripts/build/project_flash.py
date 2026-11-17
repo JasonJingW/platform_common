@@ -30,11 +30,11 @@ def chip_model(header):
 def version_values(header):
     text = header.read_text(encoding="utf-8")
     name = re.search(r'^\s*#\s*define\s+PROJECT_NAME\s+"([A-Za-z0-9_-]+)"', text, re.M)
-    parts = [re.search(r'^\s*#\s*define\s+PROJECT_VERSION_' + part + r'\s+([0-9]+)\b',
+    parts = [re.search(r'^\s*#\s*define\s+PROJECT_VERSION_' + part + r'\s+(?:\(\s*([0-9]+)\s*\)|([0-9]+)\b)',
                        text, re.M) for part in ("MAJOR", "MINOR", "PATCH")]
     if name is None or any(part is None for part in parts):
         raise ValueError(f"Invalid project name or version in {header}")
-    return {"project": name[1].upper(), "version": ".".join(part[1] for part in parts)}
+    return {"project": name[1].upper(), "version": ".".join(part[1] or part[2] for part in parts)}
 
 
 def find_jlink(requested, configured, dry_run):
