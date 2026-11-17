@@ -1,6 +1,7 @@
 # platform_common
 
-- `scripts/build/build.py`：通用构建入口，读取主仓 build 后端的 build.json 并转发命令，使用说明见 `scripts/build/readme.md`。
+- `scripts/build/project_flash.py`：J-Link 烧录入口，从根仓构建配置及 project_config.h 读取参数，支持命令预览。
+- `scripts/build/project_build.py`：通用构建入口，读取主仓 build 后端的 build.json 并转发命令，使用说明见 `scripts/build/readme.md`。
 
 - `core/stm32f7xx/`：STM32F7 芯片相关的 HAL、CMSIS、启动文件、系统文件和 HAL 配置，见该目录下的说明。
 - `FreeRTOS/`：FreeRTOS 内核、公共头文件、GCC/Cortex-M7 移植选项、heap_4、配置模板及许可证；不保留独立 `.git`，集成步骤见该目录 README。
