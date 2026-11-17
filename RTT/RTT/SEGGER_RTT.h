@@ -493,12 +493,36 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
     do {                                                                    \
         SEGGER_RTT_WriteString(0, color "[" level "] ");                       \
         SEGGER_RTT_printf(0, __VA_ARGS__);                                    \
-        SEGGER_RTT_WriteString(0, RTT_CTRL_RESET "\r\n");                      \
+        SEGGER_RTT_WriteString(0, RLOG_COLOR_RESET "\r\n");                    \
     } while (0)
 
-#define RLOG_INFO(...) RLOG_OUTPUT(RTT_CTRL_TEXT_GREEN, "INFO", __VA_ARGS__)
-#define RLOG_ERR(...)  RLOG_OUTPUT(RTT_CTRL_TEXT_RED, "ERR", __VA_ARGS__)
-#define RLOG_WAR(...)  RLOG_OUTPUT(RTT_CTRL_TEXT_YELLOW, "WAR", __VA_ARGS__)
+#if CONFIG_RTT_LOG_COLOR
+#define RLOG_COLOR_INFO RTT_CTRL_TEXT_GREEN
+#define RLOG_COLOR_ERR RTT_CTRL_TEXT_RED
+#define RLOG_COLOR_WAR RTT_CTRL_TEXT_YELLOW
+#define RLOG_COLOR_RESET RTT_CTRL_RESET
+#else
+#define RLOG_COLOR_INFO ""
+#define RLOG_COLOR_ERR ""
+#define RLOG_COLOR_WAR ""
+#define RLOG_COLOR_RESET ""
+#endif
+
+#if CONFIG_RTT_LOG_LEVEL >= 3
+#define RLOG_INFO(...) RLOG_OUTPUT(RLOG_COLOR_INFO, "INFO", __VA_ARGS__)
+#else
+#define RLOG_INFO(...) ((void)0)
+#endif
+#if CONFIG_RTT_LOG_LEVEL >= 1
+#define RLOG_ERR(...) RLOG_OUTPUT(RLOG_COLOR_ERR, "ERR", __VA_ARGS__)
+#else
+#define RLOG_ERR(...) ((void)0)
+#endif
+#if CONFIG_RTT_LOG_LEVEL >= 2
+#define RLOG_WAR(...) RLOG_OUTPUT(RLOG_COLOR_WAR, "WAR", __VA_ARGS__)
+#else
+#define RLOG_WAR(...) ((void)0)
+#endif
 
 #endif
 

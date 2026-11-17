@@ -1,0 +1,70 @@
+menu "Chip and RTOS memory"
+
+comment "STM32F767IGT6: Flash 1 MiB; system RAM 512 KiB"
+comment "SRAM1 368 KiB + SRAM2 16 KiB + DTCM 128 KiB"
+comment "Physical capacities are fixed; linker placement is configured separately"
+
+config CHIP_FLASH_SIZE_BYTES
+    int
+    default 1048576
+
+config CHIP_SRAM1_SIZE_BYTES
+    int
+    default 376832
+
+config CHIP_SRAM2_SIZE_BYTES
+    int
+    default 16384
+
+config CHIP_DTCM_SIZE_BYTES
+    int
+    default 131072
+
+config CHIP_ITCM_SIZE_BYTES
+    int
+    default 16384
+
+config CHIP_BACKUP_SRAM_SIZE_BYTES
+    int
+    default 4096
+
+config RTOS_TOTAL_HEAP_SIZE
+    int "FreeRTOS heap size (bytes)"
+    range 4096 524288
+    default 32768
+    help
+      heap_4 allocation pool. It must fit the RAM region selected by the linker,
+      together with other data and the interrupt stack. Total chip RAM is not
+      a guarantee that one heap of this size fits any particular region.
+
+config RTOS_MINIMAL_STACK_SIZE
+    int "Idle task stack depth (32-bit words)"
+    range 64 4096
+    default 128
+
+config RTOS_MAX_PRIORITIES
+    int "Number of task priority levels"
+    range 2 32
+    default 8
+
+config RTOS_MAX_TASK_NAME_LEN
+    int "Task name buffer length (including terminator)"
+    range 2 64
+    default 16
+
+config RTOS_TIMER_TASK_STACK_DEPTH
+    int "Timer task stack depth (32-bit words)"
+    range 128 8192
+    default 256
+
+config RTOS_TIMER_QUEUE_LENGTH
+    int "Timer command queue capacity"
+    range 1 128
+    default 10
+
+config RTOS_TIMER_TASK_PRIORITY
+    int "Timer task priority"
+    range 0 31
+    default 2
+
+endmenu

@@ -1,5 +1,6 @@
 #include "system_init.h"
 #include "stm32f7xx_hal.h"
+#if PROJECT_USE_FREERTOS
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -8,6 +9,7 @@
 #endif
 
 void xPortSysTickHandler(void);
+#endif
 
 void hardware_init(void)
 {
@@ -25,10 +27,12 @@ void hardware_init(void)
 void SysTick_Handler(void)
 {
     HAL_IncTick();
+#if PROJECT_USE_FREERTOS
     /* HAL uses SysTick before the scheduler starts; RTOS state is not ready yet. */
     if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
         xPortSysTickHandler();
     }
+#endif
 }
 
 void HardFault_Handler(void)

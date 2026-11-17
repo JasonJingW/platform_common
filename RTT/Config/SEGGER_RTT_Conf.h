@@ -20,6 +20,8 @@ Purpose : User configuration file for RTT.
 #ifndef SEGGER_RTT_CONF_H
 #define SEGGER_RTT_CONF_H
 
+#include "generated/project_autoconf.h"
+
 
 /*********************************************************************
 *
