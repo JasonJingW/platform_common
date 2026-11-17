@@ -32,7 +32,7 @@ CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包�
 以下路径均相对于本目录：
 
 - 头文件路径：本目录、`hal_driver/Inc`、`cmsis/Core/Include`、`cmsis/Device/ST/STM32F7xx/Include`、`config`。
-- 系统初始化源文件：`system_init.c`，仅依赖芯片 HAL/CMSIS，不依赖 RTT。
+- 系统初始化源文件：`system_init.c`，依赖芯片 HAL/CMSIS 及当前项目的 FreeRTOS 时基，不依赖 RTT；额外加入 FreeRTOS 的 `include`、选中移植层和使用方配置目录的包含路径。
 - HAL 源文件：`hal_driver/Src/*.c`。
 - 系统文件：`cmsis/Device/ST/STM32F7xx/Source/Templates/system_stm32f7xx.c`。
 - GCC 启动文件：`cmsis/Device/ST/STM32F7xx/Source/Templates/gcc/startup_stm32f767xx.s`。
@@ -42,6 +42,8 @@ CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包�
 
 `config/stm32f7xx_hal_conf.h` 是当前项目配置，包含 HAL 模块开关和 HSE 等参数；切换板卡时需核对。若使用应用自有配置，应将其所在目录加入包含路径，并避免同时引入多个同名配置。
 
-应用在 `main()` 中先调用 `hardware_init()`，再初始化所需中间件和板级资源。`hardware_init()` 仅初始化 HAL 和芯片支持的缓存：根据 `__ICACHE_PRESENT`、`__DCACHE_PRESENT` 宏，开启存在的 I-cache、关闭存在的 D-cache；启动时调用一次。应用仍需提供调用 `HAL_IncTick()` 的 SysTick 处理函数。RTT 初始化及缓冲区策略由应用自行设置。
+应用在 `main()` 中先调用 `hardware_init()`，再初始化所需中间件和板级资源。`hardware_init()` 仅初始化 HAL 和芯片支持的缓存：根据 `__ICACHE_PRESENT`、`__DCACHE_PRESENT` 宏，开启存在的 I-cache、关闭存在的 D-cache；启动时调用一次。RTT 初始化及缓冲区策略由应用自行设置。
+
+`system_init.c` 同时提供 STM32F7 启动向量对应的 `SysTick_Handler()` 和 `HardFault_Handler()`：前者维护 HAL 毫秒计数，并在 FreeRTOS 调度开始后驱动内核 tick，要求配置为 1 kHz；后者关闭中断并停留在死循环，便于连接调试器检查，不依赖 RTT。SVC/PendSV 由 FreeRTOS 移植层提供，通过 FreeRTOSConfig.h 映射到启动入口。其他芯片应在各自硬件实现中提供对应处理函数；集成时避免重复定义同名中断处理函数。
 
 GPIO 引脚选择和板级 PLL/时钟设置由主项目的 `board/bsp/board.c` 提供，使用方将 `board/bsp` 加入包含路径。应用入口和业务代码不放入本芯片目录。

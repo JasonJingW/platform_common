@@ -37,12 +37,18 @@ FreeRTOS/
 5. 使用动态内存时编译 `portable/MemMang/heap_4.c`，配置堆大小；只选择一个堆实现。heap_4 自行管理 FreeRTOS 堆，不依赖标准库 malloc 的 `_sbrk`。
 6. 当前 STM32F767/GCC 目标使用 Cortex-M7、Thumb、FPv5-D16；浮点 ABI 应与其他源码和运行库一致。其他芯片或工具链需要补充对应移植层。
 
-## 接入现有工程时需处理
+## 当前工程适配
 
-- 中断入口：启动文件使用 `SVC_Handler`、`PendSV_Handler` 和 `SysTick_Handler`。将移植层的 `vPortSVCHandler`、`xPortPendSVHandler` 对应到启动入口，并将 RTOS tick 正确接入 SysTick。
-- 当前 `core/stm32f7xx/system_init.c` 已实现 SysTick，只调用 `HAL_IncTick()`。接入调度器时需调整此处，保留 HAL 的 1ms 时基并正确驱动 RTOS tick；不能再额外定义同名 SysTick。HAL 与 RTOS tick 频率不同时应另设时基或做正确的分频处理。
-- 配置 CPU 实际频率、tick 频率、中断优先级、任务栈、堆及可选钩子；调用 FromISR API 的中断必须满足移植层的优先级约束。
-- 应用创建任务后调用 `vTaskStartScheduler()`；现有 `main.c` 的等待中断循环尚未改为任务调度。
-- FreeRTOS API 头应在项目实际配置完成后再纳入 `project_config.h`，顺序为 `FreeRTOS.h` 在前，然后 `task.h`、`queue.h` 等所用接口。
+- 实际配置位于主项目 `board/config/FreeRTOSConfig.h`，包含路径中应使用此目录，不能使用 `config_template` 替代。
+- 该项目默认启用 `FREERTOS_USE_CHIP_CONFIG=1`，引入芯片配置 `core/stm32f7xx/config/stm32f767xgx_config.h`（相对于 platform_common）。每个 `CHIP_RTOS_*` 参数单独判断：已定义则使用芯片值，未定义则使用原默认值。设置 `FREERTOS_USE_CHIP_CONFIG=0` 可跳过芯片头；未从其他地方定义覆盖宏时，完全采用原默认配置。芯片参数均允许在包含前或通过编译选项覆盖。
+- 选用 `portable/GCC/ARM_CM7/r0p1/port.c`，它可用于所有 Cortex-M7 修订版；不要再编译 CM4F 的 port.c。使用 `portable/MemMang/heap_4.c`，堆大小 32 KiB。
+- CPU 频率取板级时钟初始化更新后的 `SystemCoreClock`；HAL 与 RTOS 共用 1 kHz SysTick，关闭 tickless idle。
+- 配置将 `vPortSVCHandler`、`xPortPendSVHandler` 映射到启动文件的 `SVC_Handler`、`PendSV_Handler`。`system_init.c` 独占 SysTick 入口，每次维护 HAL 时基，并在调度开始后调用 `xPortSysTickHandler()`。不要把后者直接宏映射为 SysTick_Handler，否则会与包装函数冲突。
+- `system_init.c` 通过编译检查要求 tick 频率为 1 kHz；如需其他频率或 tickless，需先调整 HAL 时基方案。
+- 中断优先级最低为 15，调用 FromISR API 的中断优先级数值须不小于 5，且使用与板级设置一致的优先级分组。
+- `project_config.h` 已按正确顺序引入 FreeRTOS 及任务、队列、信号量、定时器等接口；板级接口由使用方单独包含 `board.h`。
+- `main.c` 初始化后调用 `task_start()`，由应用仓库的 `task/task_manage.c` 创建任务并启动调度器；任务栈默认 512 个 32 位字（2 KiB），当前每 50 ms 翻转 LED。内存分配失败和栈溢出钩子也位于任务管理模块，发生错误后停留等待调试。
 
-此次仅整理依赖及说明，未启用调度器。内核、两种备选移植层和 heap_4 使用临时验证配置进行 ARM GCC 语法检查；不代表板级配置、完整链接或上板运行已验证。
+应用任务实现位于 `task/task_heartbeat.c`，主项目 `board/config/task_config.h` 仅保存优先级；创建函数、入口声明、名称、栈和循环延时间隔均在任务自身的 .c/.h 中管理。其中 `HEARTBEAT_TASK_STACK_DEPTH` 直接定义为 512，不进行芯片参数选择或条件回退。其余默认值保持为：heap 32 KiB、idle 栈 128 字、timer 栈 256 字、timer 队列 10 项、8 个优先级、名称长度 16、timer 优先级 2。物理 RAM 容量与 RTOS 分配预算分开定义；所有分配仍须满足链接区域和实际任务负载要求。
+
+使用实际项目配置，26 个源文件（应用、BSP、系统初始化、启动文件、HAL、RTT、内核、移植层及 heap_4）已通过 ARM GCC 编译，并通过可重定位链接检查，无重复中断或钩子定义。完整固件仍需提供芯片链接脚本、运行库及最终链接配置，尚未上板运行。
