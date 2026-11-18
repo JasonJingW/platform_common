@@ -17,6 +17,17 @@ foreach(_source IN ITEMS stm32f7xx_hal stm32f7xx_hal_cortex stm32f7xx_hal_flash
     target_sources(common_stm32f7xx INTERFACE "${_common_hal}/Src/${_source}.c")
 endforeach()
 
+foreach(_driver IN ITEMS dma i2c sai)
+    add_library(common_stm32f7xx_${_driver} INTERFACE)
+    add_library(common::stm32f7xx_${_driver} ALIAS common_stm32f7xx_${_driver})
+    target_sources(common_stm32f7xx_${_driver} INTERFACE "${_common_hal}/Src/stm32f7xx_hal_${_driver}.c")
+    string(TOUPPER "${_driver}" _module)
+    target_compile_definitions(common_stm32f7xx_${_driver} INTERFACE HAL_${_module}_MODULE_ENABLED)
+endforeach()
+target_sources(common_stm32f7xx_i2c INTERFACE "${_common_hal}/Src/stm32f7xx_hal_i2c_ex.c")
+target_link_libraries(common_stm32f7xx_i2c INTERFACE common::stm32f7xx_dma)
+target_link_libraries(common_stm32f7xx_sai INTERFACE common::stm32f7xx_dma)
+
 set(_common_rtos "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS")
 add_library(common_freertos_core INTERFACE)
 add_library(common::freertos_core ALIAS common_freertos_core)
