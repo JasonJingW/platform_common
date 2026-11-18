@@ -488,10 +488,17 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
         SEGGER_RTT_SetFlagsUpBuffer(0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);         \
     } while (0)
 
-/* Accept the same format and arguments as SEGGER_RTT_printf. */
-#define RLOG_OUTPUT(color, level, ...)                                       \
+/* Formatted plain output: no level, color, or log-level filtering; one line. */
+#define RLOG_PRINT(...)                                                     \
     do {                                                                    \
-        SEGGER_RTT_WriteString(0, color "[" level "] ");                       \
+        SEGGER_RTT_printf(0, __VA_ARGS__);                                    \
+        SEGGER_RTT_WriteString(0, "\r\n");                                  \
+    } while (0)
+
+/* Level-based logging with optional ANSI colors. */
+#define RLOG_OUTPUT(color, prefix, ...)                                      \
+    do {                                                                    \
+        SEGGER_RTT_WriteString(0, color prefix);                             \
         SEGGER_RTT_printf(0, __VA_ARGS__);                                    \
         SEGGER_RTT_WriteString(0, RLOG_COLOR_RESET "\r\n");                    \
     } while (0)
@@ -509,17 +516,17 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
 #endif
 
 #if RTT_LOG_LEVEL >= 3
-#define RLOG_INFO(...) RLOG_OUTPUT(RLOG_COLOR_INFO, "INFO", __VA_ARGS__)
+#define RLOG_INFO(...) RLOG_OUTPUT(RLOG_COLOR_INFO, "[INFO] ", __VA_ARGS__)
 #else
 #define RLOG_INFO(...) ((void)0)
 #endif
 #if RTT_LOG_LEVEL >= 1
-#define RLOG_ERR(...) RLOG_OUTPUT(RLOG_COLOR_ERR, "ERR", __VA_ARGS__)
+#define RLOG_ERR(...) RLOG_OUTPUT(RLOG_COLOR_ERR, "[ERR] ", __VA_ARGS__)
 #else
 #define RLOG_ERR(...) ((void)0)
 #endif
 #if RTT_LOG_LEVEL >= 2
-#define RLOG_WAR(...) RLOG_OUTPUT(RLOG_COLOR_WAR, "WAR", __VA_ARGS__)
+#define RLOG_WAR(...) RLOG_OUTPUT(RLOG_COLOR_WAR, "[WAR] ", __VA_ARGS__)
 #else
 #define RLOG_WAR(...) ((void)0)
 #endif

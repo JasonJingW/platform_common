@@ -22,6 +22,7 @@ Purpose : User configuration file for RTT.
 
 #define RTT_LOG_LEVEL (3U) /* 0=off, 1=errors, 2=warnings, 3=info. */
 #define RTT_LOG_COLOR (1)  /* Enable ANSI log colors. */
+#define BUFFER_SIZE_UP (2048U) /* Channel 0 log buffer size in bytes. */
 
 
 /*********************************************************************
