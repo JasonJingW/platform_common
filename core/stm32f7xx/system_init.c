@@ -15,7 +15,10 @@ void hardware_init(void)
 {
     /* Configure only the caches provided by the selected device. */
 #if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
-    SCB_DisableDCache();
+    /* Keep RTT RAM coherent without cleaning uninitialized cache lines at boot. */
+    if ((SCB->CCR & SCB_CCR_DC_Msk) != 0U) {
+        SCB_DisableDCache();
+    }
 #endif
 #if defined(__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)
     SCB_EnableICache();
