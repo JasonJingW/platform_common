@@ -32,7 +32,7 @@ CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包�
 以下路径均相对于本目录：
 
 - 头文件路径：本目录、`hal_driver/Inc`、`cmsis/Core/Include`、`cmsis/Device/ST/STM32F7xx/Include`、`config`。
-- 系统初始化源文件：`system_init.c`，依赖 HAL/CMSIS，不依赖 RTT；根构建定义 PROJECT_USE_FREERTOS=1 时再接入 RTOS 时基及相应头文件，定义为 0 时保持裸机 HAL 时基。
+- 系统初始化源文件：`system_init.c`，使用 HAL/CMSIS 和 FreeRTOS，并提供共享的 SysTick 入口。
 - HAL 源文件：`hal_driver/Src/*.c`。
 - 系统文件：`cmsis/Device/ST/STM32F7xx/Source/Templates/system_stm32f7xx.c`。
 - GCC 启动文件：`cmsis/Device/ST/STM32F7xx/Source/Templates/gcc/startup_stm32f767xx.s`。
@@ -44,6 +44,6 @@ CMSIS 保留供应商内部目录层级及许可证。`hal_driver` 当前仅包�
 
 应用在 `main()` 中先调用 `hardware_init()`，再初始化所需中间件和板级资源。`hardware_init()` 先在 D-cache 已启用时写回并关闭它，以便变更内存属性。随后用 MPU 将 `CHIP_NONCACHE_RAM_BASE` 起始的 16 KiB 共享 RAM 配置为不可缓存、不可执行，再开启 D-cache、I-cache 并初始化 HAL。链接脚本须提供 `__noncache_start__` 和 `__noncache_end__` 两个边界符号，并预留 16 KiB 对齐区域。RTT 初始化及缓冲区布局由应用和链接脚本负责。
 
-`system_init.c` 同时提供 STM32F7 启动向量对应的 `SysTick_Handler()` 和 `HardFault_Handler()`：前者维护 HAL 毫秒计数，并在 FreeRTOS 调度开始后驱动内核 tick，要求配置为 1 kHz；后者关闭中断并停留在死循环，便于连接调试器检查，不依赖 RTT。SVC/PendSV 由 FreeRTOS 移植层提供，通过 FreeRTOSConfig.h 映射到启动入口。其他芯片应在各自硬件实现中提供对应处理函数；集成时避免重复定义同名中断处理函数。
+`system_init.c` 的 `SysTick_Handler()` 更新 HAL 时基，并在调度器启动后调用 FreeRTOS 移植层的 `xPortSysTickHandler()`。SVC 和 PendSV 直接映射到 FreeRTOS 移植层。HardFault 等未覆盖的异常使用 STM32 启动文件的弱别名，进入 `Default_Handler` 停留以供调试。
 
-GPIO 引脚选择和板级 PLL/时钟设置由主项目的 `board/bsp/board.c` 提供，使用方将 `board/bsp` 加入包含路径。应用入口和业务代码不放入本芯片目录。
+`hardware_init()` 在 HAL 初始化后用 25 MHz HSE 和 PLL 配置 216 MHz 系统时钟及总线分频。时钟配置失败时停在初始化阶段，便于调试。GPIO 引脚由主项目的 `board/bsp/bsp_gpio.c` 管理。
