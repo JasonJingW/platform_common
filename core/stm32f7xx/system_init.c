@@ -1,5 +1,6 @@
 #include "system_init.h"
 #include "stm32f7xx_hal.h"
+#include "stm32f767xgx_config.h"
 #if PROJECT_USE_FREERTOS
 #include "FreeRTOS.h"
 #include "task.h"
@@ -11,18 +12,36 @@
 void xPortSysTickHandler(void);
 #endif
 
+static void init_noncacheable_ram(void)
+{
+    MPU_Region_InitTypeDef region = {
+        .Enable = MPU_REGION_ENABLE,
+        .Number = MPU_REGION_NUMBER0,
+        .BaseAddress = (uint32_t)CHIP_NONCACHE_RAM_BASE,
+        .Size = MPU_REGION_SIZE_16KB,
+        .SubRegionDisable = 0U,
+        .TypeExtField = MPU_TEX_LEVEL1,
+        .AccessPermission = MPU_REGION_FULL_ACCESS,
+        .DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE,
+        .IsShareable = MPU_ACCESS_SHAREABLE,
+        .IsCacheable = MPU_ACCESS_NOT_CACHEABLE,
+        .IsBufferable = MPU_ACCESS_NOT_BUFFERABLE,
+    };
+
+    HAL_MPU_Disable();
+    HAL_MPU_ConfigRegion(&region);
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
+
 void hardware_init(void)
 {
-    /* Configure only the caches provided by the selected device. */
-#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
-    /* Keep RTT RAM coherent without cleaning uninitialized cache lines at boot. */
+    /* Write back any inherited cache contents before changing MPU attributes. */
     if ((SCB->CCR & SCB_CCR_DC_Msk) != 0U) {
         SCB_DisableDCache();
     }
-#endif
-#if defined(__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)
+    init_noncacheable_ram();
+    SCB_EnableDCache();
     SCB_EnableICache();
-#endif
     HAL_Init();
 }
 
