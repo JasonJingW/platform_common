@@ -13,7 +13,7 @@
 #define CHIP_BACKUP_SRAM_SIZE_BYTES       (4096U)
 
 /* Adjustable budgets: stack depths are words, heap size is bytes. */
-#define CHIP_RTOS_TOTAL_HEAP_SIZE         (32U * 1024U)
+#define CHIP_RTOS_TOTAL_HEAP_SIZE         (64U * 1024U)
 #define CHIP_RTOS_MINIMAL_STACK_SIZE      (128U)
 #define CHIP_RTOS_TIMER_TASK_STACK_DEPTH  (256U)
 #define CHIP_RTOS_TIMER_QUEUE_LENGTH     (10U)
