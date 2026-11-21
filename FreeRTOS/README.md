@@ -47,7 +47,7 @@ FreeRTOS/
 - `system_init.c` 通过编译检查要求 tick 频率为 1 kHz；如需其他频率或 tickless，需先调整 HAL 时基方案。
 - 中断优先级最低为 15，调用 FromISR API 的中断优先级数值须不小于 5，且使用与板级设置一致的优先级分组。
 - `project_config.h` 已按正确顺序引入 FreeRTOS 及任务、队列、信号量、定时器等接口；板级接口由使用方单独包含 `bsp_gpio.h`。
-- `main.c` 初始化后调用 `task_start()`，由应用仓库的 `task/task_manage.c` 创建任务并启动调度器；任务栈默认 512 个 32 位字（2 KiB），当前每 500 ms 翻转 LED0、每 1000 ms 翻转 LED1。内存分配失败和栈溢出钩子也位于任务管理模块，发生错误后停留等待调试。
+- `task/main.c` 初始化后调用 `task_start()`，由应用仓库的 `task/task_manage.c` 创建任务并启动调度器；任务栈默认 512 个 32 位字（2 KiB），当前每 500 ms 翻转 LED0、每 1000 ms 翻转 LED1。内存分配失败和栈溢出钩子也位于任务管理模块，发生错误后停留等待调试。
 
 心跳任务调度位于 `platform_application/task/task_heartbeat.c`，状态灯逻辑位于 `platform_application/heart_beat/heartbeat.c`，主项目 `board/config/task_config.h` 仅保存优先级；创建函数、任务入口、名称、栈和循环延时间隔均在任务自身的 .c/.h 中管理。其中 `HEARTBEAT_TASK_STACK_DEPTH` 直接在任务头文件中定义为 512U，不进行芯片参数选择或条件回退。其余默认值保持为：heap 32 KiB、idle 栈 128 字、timer 栈 256 字、timer 队列 10 项、8 个优先级、名称长度 16、timer 优先级 2。物理 RAM 容量与 RTOS 分配预算分开定义；所有分配仍须满足链接区域和实际任务负载要求。
 
