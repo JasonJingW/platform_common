@@ -214,6 +214,12 @@
   #include "stm32f7xx_hal_gpio.h"
 #endif /* HAL_GPIO_MODULE_ENABLED */
 
+#ifdef HAL_ETH_MODULE_ENABLED
+  #define PHY_READ_TO  (10U)
+  #define PHY_WRITE_TO (10U)
+  #include "stm32f7xx_hal_eth.h"
+#endif /* HAL_ETH_MODULE_ENABLED */
+
 #ifdef HAL_DMA_MODULE_ENABLED
   #include "stm32f7xx_hal_dma.h"
 #endif /* HAL_DMA_MODULE_ENABLED */

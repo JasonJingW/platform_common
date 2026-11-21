@@ -17,7 +17,7 @@ foreach(_source IN ITEMS stm32f7xx_hal stm32f7xx_hal_cortex stm32f7xx_hal_flash
     target_sources(common_stm32f7xx INTERFACE "${_common_hal}/Src/${_source}.c")
 endforeach()
 
-foreach(_driver IN ITEMS dma i2c sai)
+foreach(_driver IN ITEMS dma eth i2c sai)
     add_library(common_stm32f7xx_${_driver} INTERFACE)
     add_library(common::stm32f7xx_${_driver} ALIAS common_stm32f7xx_${_driver})
     target_sources(common_stm32f7xx_${_driver} INTERFACE "${_common_hal}/Src/stm32f7xx_hal_${_driver}.c")
@@ -27,6 +27,16 @@ endforeach()
 target_sources(common_stm32f7xx_i2c INTERFACE "${_common_hal}/Src/stm32f7xx_hal_i2c_ex.c")
 target_link_libraries(common_stm32f7xx_i2c INTERFACE common::stm32f7xx_dma)
 target_link_libraries(common_stm32f7xx_sai INTERFACE common::stm32f7xx_dma)
+
+set(_common_lwip "${CMAKE_CURRENT_LIST_DIR}/lwip/src")
+add_library(common_lwip INTERFACE)
+add_library(common::lwip ALIAS common_lwip)
+target_include_directories(common_lwip INTERFACE "${_common_lwip}/include")
+foreach(_source IN ITEMS core/def core/inet_chksum core/init core/ip core/mem core/memp
+        core/netif core/pbuf core/stats core/sys core/timeouts core/udp core/tcp core/tcp_in core/tcp_out
+        core/ipv4/etharp core/ipv4/icmp core/ipv4/ip4 core/ipv4/ip4_addr netif/ethernet)
+    target_sources(common_lwip INTERFACE "${_common_lwip}/${_source}.c")
+endforeach()
 
 set(_common_rtos "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS")
 add_library(common_freertos_core INTERFACE)
